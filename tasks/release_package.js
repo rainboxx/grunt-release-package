@@ -40,6 +40,7 @@ module.exports = function(grunt) {
             tagName: 'v%VERSION%',
             tagMessage: 'Release v%VERSION%',
             pushTo: 'origin',
+            branch: 'master',
             push: true,
 
             // GitHub certificate issue in OS X
@@ -58,6 +59,7 @@ module.exports = function(grunt) {
                 certificateCheck: options.certificateCheckCb,
                 credentials: options.credentialsCb,
             },
+            checkoutBranch: options.branch,
         };
         var remoteCallbacks = {
             certificateCheck: options.certificateCheckCb,
@@ -303,13 +305,12 @@ module.exports = function(grunt) {
             return repo
             .getRemote(options.pushTo)
             .then(function(remote) {
-                var tagRefSpec = 'refs/tags/' + tag.name();
-                tagRefSpec += ':' + tagRefSpec;
+                var refSpec = ['refs/tags/' + tag.name(), 'refs/heads/' + options.branch];
 
                 remote.setCallbacks(remoteCallbacks);
 
                 return remote.push(
-                    ['refs/heads/master:refs/heads/master', tagRefSpec],
+                    [refSpec.map(function(r) { return r + ':' + r; })],
                     null,
                     repo.defaultSignature(),
                     'Push to master'
